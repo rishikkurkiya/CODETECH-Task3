@@ -1,0 +1,82 @@
+/* 
+This is my Google Colab file Code copied(Output screenshot is in readme file). This code is for my machine learning internship task that is - PREDICTIVE MODELING WITH CLASSIFICATION. 
+Here, I have taken iris dataset availabel on keggle, I have imported it in google colab. I have imported some important libraries and Then I have cleaned the data using some preprocessing techinques. 
+Then I have initialized 4 classification models 1.) Logistic Regression, 2.) Decision Tree, 3.) Random Forest and 4.) Support Vector Machine(SVM). 
+Then I have trained and tested these models and printed the results which are accuracy, precision, recall and f1_score. 
+Finally, I have compared the output of above models and suggested the best model based on f1_score of each model.
+*/
+
+
+## PREDICTIVE MODELING WITH CLASSIFICATION
+
+### Importing libraries
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import make_scorer, accuracy_score, precision_score, recall_score, f1_score
+
+
+### Loading and Preprocessing Data
+
+# Load the Iris dataset
+from sklearn.datasets import load_iris
+data = load_iris()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df['target'] = data.target
+
+# Preprocess the data (Standardization)
+X = df.drop('target', axis=1)
+y = df['target']
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+###Initializing and Training Models
+
+# Initialize classifiers
+classifiers = {
+    'Logistic Regression': LogisticRegression(),
+    'Decision Tree': DecisionTreeClassifier(),
+    'Random Forest': RandomForestClassifier(),
+    'Support Vector Machine': SVC()
+}
+
+# Define scoring metrics
+scoring = {
+    'accuracy': make_scorer(accuracy_score),
+    'precision': make_scorer(precision_score, average='weighted'),
+    'recall': make_scorer(recall_score, average='weighted'),
+    'f1_score': make_scorer(f1_score, average='weighted')
+}
+
+# Train and evaluate each classifier using cross-validation
+results = {}
+for name, clf in classifiers.items():
+    scores = {}
+    for metric_name, metric in scoring.items():
+        score = cross_val_score(clf, X_scaled, y, cv=5, scoring=metric)
+        scores[metric_name] = np.mean(score)
+    results[name] = scores
+
+
+### Printing and Comparing Results
+
+# Print the results
+for name, metrics in results.items():
+    print(f"Classifier: {name}")
+    print(f"Accuracy: {metrics['accuracy']:.4f}")
+    print(f"Precision: {metrics['precision']:.4f}")
+    print(f"Recall: {metrics['recall']:.4f}")
+    print(f"F1 Score: {metrics['f1_score']:.4f}")
+    print('-'*30)
+
+# Compare the performances
+best_model = max(results, key=lambda x: results[x]['f1_score'])
+print(f"The best model is: {best_model} with F1 Score: {results[best_model]['f1_score']:.4f}")
